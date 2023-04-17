@@ -1,0 +1,34 @@
+- name: mysql installation & configuration 
+  become: yes
+  hosts: webservers
+  vars_files:
+    config.yaml
+  tasks:
+    - name: Installing Mysql and its dependencies
+      package:       #Module 1
+       name: "{{item}}"
+       state: present
+       update_cache: yes
+      loop:          #Module 2
+       - mysql-server
+       - mysql-client 
+       - python3-mysqldb
+       - libmysqlclient-dev
+      become: yes
+    - name: start and enable mysql service
+      service:      #Module 3
+        name: mysql
+        state: started
+        enabled: yes
+    - name: creating mysql user 
+      mysql_user:
+        name: "{{db_user}}"
+        password: "{{db_pass}}"
+        priv: '*.*:ALL'
+        host: '%'
+        state: present
+    - name: creating mysql_db
+      mysql_db:
+        name: "{{db_name}}"
+        state: present
+   
